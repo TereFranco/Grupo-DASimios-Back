@@ -3,7 +3,7 @@ from rest_framework import generics
 from .models import Category, Auction, Bid
 from .serializers import CategoryListCreateSerializer, CategoryDetailSerializer, AuctionListCreateSerializer, AuctionDetailSerializer, BidDetailSerializer, BidListCreateSerializer
 from django.db.models import Q
- 
+from rest_framework.exceptions import NotFound
  
 # Create your views here.
 class CategoryListCreate(generics.ListCreateAPIView):
@@ -21,9 +21,21 @@ class AuctionListCreate(generics.ListCreateAPIView):
     serializer_class = AuctionListCreateSerializer
  
  
+# class AuctionRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Auction.objects.all()
+#     serializer_class = AuctionDetailSerializer
+
 class AuctionRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Auction.objects.all()
     serializer_class = AuctionDetailSerializer
+
+    # Si no existe una subasta introducida en la url
+    def get_object(self):
+        try:
+            auction = Auction.objects.get(pk=self.kwargs['pk'])
+        except Auction.DoesNotExist:
+            raise NotFound(detail="La subasta solicitada no existe.")
+        return auction
  
 class BidListCreate(generics.ListCreateAPIView):
     serializer_class = BidListCreateSerializer

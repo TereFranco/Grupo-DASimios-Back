@@ -3,6 +3,7 @@ from django.utils import timezone
 from .models import Category, Auction, Bid
 from drf_spectacular.utils import extend_schema_field
 from rest_framework.exceptions import NotFound, ValidationError
+from datetime import timedelta
 
 
 
@@ -17,19 +18,94 @@ class CategoryDetailSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+# class AuctionListCreateSerializer(serializers.ModelSerializer):
+#     creation_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ",
+#     read_only=True)
+#     closing_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
+#     isOpen = serializers.SerializerMethodField(read_only=True)
+
+#     class Meta:
+#         model = Auction
+#         fields = '__all__'
+
+#     @extend_schema_field(serializers.BooleanField()) 
+#     def get_isOpen(self, obj):
+#         return obj.closing_date > timezone.now()
+
 class AuctionListCreateSerializer(serializers.ModelSerializer):
-    creation_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ",
-    read_only=True)
-    closing_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
+    creation_date = serializers.DateTimeField(
+        format="%Y-%m-%dT%H:%M:%SZ", read_only=True
+    )
+    closing_date = serializers.DateTimeField(
+        format="%Y-%m-%dT%H:%M:%SZ",
+        error_messages={
+            "invalid": "Introduce una fecha válida.",
+            "required": "La fecha de cierre es obligatoria."
+        }
+    )
+    title = serializers.CharField(error_messages={"required": "El título es obligatorio."})
+    description = serializers.CharField(error_messages={"required": "La descripción es obligatoria."})
+    price = serializers.DecimalField(
+        max_digits=10, decimal_places=2,
+        error_messages={"required": "El precio es obligatorio."}
+    )
+    rating = serializers.DecimalField(
+        max_digits=3, decimal_places=2,
+        error_messages={"required": "La valoración es obligatoria."}
+    )
+    stock = serializers.IntegerField(error_messages={"required": "El stock es obligatorio."})
+    brand = serializers.CharField(error_messages={"required": "La marca es obligatoria."})
+    category = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(),
+        error_messages={"required": "La categoría es obligatoria."}
+    )
+    thumbnail = serializers.URLField(
+        error_messages={
+            "required": "La URL de la imagen es obligatoria.",
+            "invalid": "Introduce una URL válida."
+        }
+    )
     isOpen = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Auction
         fields = '__all__'
 
-    @extend_schema_field(serializers.BooleanField()) 
+    @extend_schema_field(serializers.BooleanField())
     def get_isOpen(self, obj):
         return obj.closing_date > timezone.now()
+
+    def validate_price(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("El precio debe ser un número positivo.")
+        return value
+
+    def validate_stock(self, value):
+        if value < 0:
+            raise serializers.ValidationError("El stock no puede ser negativo.")
+        return value
+
+    def validate_rating(self, value):
+        if not (1 <= value <= 5):
+            raise serializers.ValidationError("La valoración debe estar entre 1 y 5.")
+        return value
+
+    
+    def validate(self, data):
+        closing_date = data.get("closing_date")
+        creation_time = data.get("creation_date")
+
+        if closing_date <= creation_time:
+            raise serializers.ValidationError({
+                "closing_date": "La fecha de cierre debe ser posterior a la fecha actual."
+            })
+
+        if closing_date < creation_time + timedelta(days=15):
+            raise serializers.ValidationError({
+                "closing_date": "La fecha de cierre debe ser al menos 15 días posterior a la fecha actual."
+            })
+
+        return data
 
 class AuctionDetailSerializer(serializers.ModelSerializer):
     creation_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ",
