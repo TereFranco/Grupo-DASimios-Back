@@ -27,3 +27,15 @@ class Auction(models.Model):
         ordering=('id',)
     def __str__(self):
         return self.title
+
+class Bid(models.Model): 
+    auction = models.ForeignKey(Auction, related_name='Bid', on_delete=models.CASCADE)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    creation_date = models.DateTimeField(auto_now_add=True)
+    bidder = models.CharField(max_length=150) 
+
+    class Meta:  
+        ordering=('id',)  
+ 
+    def __str__(self): 
+        return f"Bid on {self.auction} by {self.bidder}"
