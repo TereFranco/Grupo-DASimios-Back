@@ -61,10 +61,10 @@ class AuctionListCreate(generics.ListCreateAPIView):
  
     def get_queryset(self):
         queryset = Auction.objects.all()
-        texto = self.request.query_params.get('texto')
-        categoria = self.request.query_params.get('categoria')
-        precio_min = self.request.query_params.get('precioMin')
-        precio_max = self.request.query_params.get('precioMax')
+        texto = self.request.query_params.get('search')
+        categoria = self.request.query_params.get('category_id')
+        precio_min = self.request.query_params.get('min_price')
+        precio_max = self.request.query_params.get('max_price')
  
         # Filtrar por texto (en título o descripción)
         if texto:
