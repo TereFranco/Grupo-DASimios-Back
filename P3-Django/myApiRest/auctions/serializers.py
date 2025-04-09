@@ -93,13 +93,15 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
     
     def validate(self, data):
         closing_date = data.get("closing_date")
-        creation_time = data.get("creation_date")
+        creation_time = timezone.now()  # Obtén la fecha y hora actuales, ya que creation_date es read_only
 
+        # La fecha de cierre sea posterior a la fecha de creación (actual)
         if closing_date <= creation_time:
             raise serializers.ValidationError({
                 "closing_date": "La fecha de cierre debe ser posterior a la fecha actual."
             })
 
+        # Verifica que la fecha de cierre sea al menos 15 días posterior a la fecha de creación
         if closing_date < creation_time + timedelta(days=15):
             raise serializers.ValidationError({
                 "closing_date": "La fecha de cierre debe ser al menos 15 días posterior a la fecha actual."
