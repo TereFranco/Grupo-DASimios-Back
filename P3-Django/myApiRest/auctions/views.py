@@ -4,6 +4,10 @@ from .models import Category, Auction, Bid
 from .serializers import CategoryListCreateSerializer, CategoryDetailSerializer, AuctionListCreateSerializer, AuctionDetailSerializer, BidDetailSerializer, BidListCreateSerializer
 from django.db.models import Q
 from rest_framework.exceptions import NotFound
+from rest_framework.views import APIView 
+from rest_framework.permissions import IsAuthenticated 
+from rest_framework.response import Response 
+from .permissions import IsOwnerOrAdmin 
  
 # Create your views here.
 class CategoryListCreate(generics.ListCreateAPIView):
@@ -26,6 +30,7 @@ class AuctionListCreate(generics.ListCreateAPIView):
 #     serializer_class = AuctionDetailSerializer
 
 class AuctionRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsOwnerOrAdmin]  
     queryset = Auction.objects.all()
     serializer_class = AuctionDetailSerializer
 
@@ -87,6 +92,15 @@ class AuctionListCreate(generics.ListCreateAPIView):
             queryset = queryset.filter(price__lte=precio_max)
  
         return queryset
+    
+class UserAuctionListView(APIView): 
+    permission_classes = [IsAuthenticated] 
+
+    def get(self, request, *args, **kwargs): 
+        # Obtener las subastas del usuario autenticado 
+        user_auctions = Auction.objects.filter(auctioneer=request.user) 
+        serializer = AuctionListCreateSerializer(user_auctions, many=True) 
+        return Response(serializer.data) 
  
  
 """
