@@ -73,7 +73,7 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
         fields = [
         'id', 'title', 'description', 'price', 'rating', 'stock',
         'brand', 'category', 'category_name', 'thumbnail',
-        'creation_date', 'closing_date', 'auctioneer', 'isOpen'
+        'creation_date', 'closing_date', 'isOpen'
     ]
 
     @extend_schema_field(serializers.BooleanField())

@@ -24,8 +24,7 @@ class UserRegisterView(generics.CreateAPIView):
                 'access': str(refresh.access_token), 
                 'refresh': str(refresh), 
             }, status=status.HTTP_201_CREATED) 
-        return Response(serializer.errors, 
-status=status.HTTP_400_BAD_REQUEST) 
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
  
 class UserListView(generics.ListAPIView): 
     permission_classes = [IsAdminUser] 
