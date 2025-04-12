@@ -8,7 +8,7 @@ urlpatterns = [
     path('categories/<int:pk>/', CategoryRetrieveUpdateDestroy.as_view(), name='category-detail'), 
     path('', AuctionListCreate.as_view(), name='auction-list-create'), 
     path('<int:pk>/', AuctionRetrieveUpdateDestroy.as_view(), name='auction-detail'), 
-    path('<int:id_auction>/bid/', BidListCreate.as_view(), name='bid-list-create'), 
-    path('<int:id_auction>/bid/<int:pk>/', BidRetrieveUpdateDestroy.as_view(), name='bid-detail'), 
+    path('<int:auction_id>/bid/', BidListCreate.as_view(), name='bid-list-create'), 
+    path('<int:auction_id>/bid/<int:pk>/', BidRetrieveUpdateDestroy.as_view(), name='bid-detail'), 
     path('users/', UserAuctionListView.as_view(), name='action-from-users'), 
     ] 

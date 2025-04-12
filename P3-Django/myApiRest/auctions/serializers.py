@@ -178,11 +178,7 @@ class BidListCreateSerializer(serializers.ModelSerializer):
 
     class Meta: 
         model = Bid 
-        fields = [
-        'id', 'title', 'description', 'price', 'rating', 'stock',
-        'brand', 'category', 'category_name', 'thumbnail',
-        'creation_date', 'closing_date', 'auctioneer', 'isOpen'
-    ]
+        fields = '__all__'
 
     def validate_price(self, value):
         if value <= 0:
@@ -199,9 +195,11 @@ class BidListCreateSerializer(serializers.ModelSerializer):
         highest_bid = auction.bids.order_by('-price').first()
         if highest_bid and price <= highest_bid.price:
             raise serializers.ValidationError("La puja debe ser mayor que la anterior.")
-        if not highest_bid and price <= auction.starting_price:
+        if not highest_bid and price <= auction.price:  # <-- Aquí estaba el error
             raise serializers.ValidationError("La puja debe ser mayor que el precio inicial.")
+        
         return data
+
 
     
 class BidDetailSerializer(serializers.ModelSerializer):

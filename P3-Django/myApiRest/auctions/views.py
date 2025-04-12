@@ -8,11 +8,6 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated 
 from rest_framework.response import Response 
 from .permissions import IsOwnerOrAdmin 
-
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
-from .models import Auction
-from .serializers import AuctionListCreateSerializer
  
 # Create your views here.
 class CategoryListCreate(generics.ListCreateAPIView):
@@ -107,15 +102,6 @@ class UserAuctionListView(APIView):
         serializer = AuctionListCreateSerializer(user_auctions, many=True) 
         return Response(serializer.data) 
  
-class AuctionViewSet(viewsets.ModelViewSet):
-    queryset = Auction.objects.all()
-    serializer_class = AuctionListCreateSerializer
-    permission_classes = [IsAuthenticated]  # Asegúrate de que solo los usuarios autenticados puedan crear subastas
-
-    def perform_create(self, serializer):
-        # Asigna el usuario logueado como el auctioneer automáticamente
-        serializer.save(auctioneer=self.request.user)
-
  
 """
 Texto: http://127.0.0.1:8000/api/auctions/?texto=iphone
