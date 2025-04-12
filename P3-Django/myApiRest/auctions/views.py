@@ -20,9 +20,9 @@ class CategoryRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CategoryDetailSerializer
  
  
-class AuctionListCreate(generics.ListCreateAPIView):
-    queryset = Auction.objects.all()
-    serializer_class = AuctionListCreateSerializer
+# class AuctionListCreate(generics.ListCreateAPIView):
+#     queryset = Auction.objects.all()
+#     serializer_class = AuctionListCreateSerializer
  
  
 # class AuctionRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
@@ -51,7 +51,7 @@ class BidListCreate(generics.ListCreateAPIView):
     #recibe el serializador #metodo que recibe es POST
     def perform_create(self,serializer): #sobreescribimos este método para crear una puja tenemos que meter el id_auctions
         auction_id=self.kwargs['auction_id'] #tenemos que añadir al POST el id del auction
-        serializer.save(auction_id=auction_id)
+        serializer.save(auction_id=auction_id, bidder=self.request.user)
    
  
 class BidRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
@@ -92,6 +92,9 @@ class AuctionListCreate(generics.ListCreateAPIView):
             queryset = queryset.filter(price__lte=precio_max)
  
         return queryset
+    
+    def perform_create(self, serializer):
+        serializer.save(auctioneer=self.request.user)
     
 class UserAuctionListView(APIView): 
     permission_classes = [IsAuthenticated] 

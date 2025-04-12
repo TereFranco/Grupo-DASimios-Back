@@ -175,10 +175,10 @@ class AuctionDetailSerializer(serializers.ModelSerializer):
 class BidListCreateSerializer(serializers.ModelSerializer):
     creation_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ", 
     read_only=True) 
-
+    bidder = serializers.CharField(read_only=True)
     class Meta: 
         model = Bid 
-        fields = '__all__'
+        fields = ['id', 'auction', 'price', 'creation_date','bidder']
 
     def validate_price(self, value):
         if value <= 0:
