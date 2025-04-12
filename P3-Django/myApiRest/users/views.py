@@ -8,6 +8,8 @@ from .serializers import UserSerializer
 from .serializers import UserSerializer, ChangePasswordSerializer 
 from rest_framework.exceptions import ValidationError 
 from django.contrib.auth.password_validation import validate_password 
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .serializers import CustomTokenObtainPairSerializer
  
 class UserRegisterView(generics.CreateAPIView): 
     permission_classes = [AllowAny]
@@ -102,3 +104,8 @@ status=status.HTTP_205_RESET_CONTENT)
  
         except Exception as e: 
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer

@@ -1,4 +1,5 @@
 from rest_framework import serializers 
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import CustomUser 
 
 class UserSerializer(serializers.ModelSerializer): 
@@ -22,3 +23,10 @@ class UserSerializer(serializers.ModelSerializer):
 class ChangePasswordSerializer(serializers.Serializer): 
     old_password = serializers.CharField(required=True) 
     new_password = serializers.CharField(required=True) 
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        data['username'] = self.user.username  # 👈 añadimos el nombre del usuario
+        return data
