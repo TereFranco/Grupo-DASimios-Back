@@ -14,10 +14,6 @@ __pycache__/
 # Archivos de base de datos locales
 *.sqlite3
 
-# Archivos del entorno
-.env
-*.env
-
 # Archivos de configuración del IDE/editor
 .vscode/
 .idea/
