@@ -17,22 +17,8 @@ class CategoryDetailSerializer(serializers.ModelSerializer):
         model = Category
         fields = '__all__'
 
-
-# class AuctionListCreateSerializer(serializers.ModelSerializer):
-#     creation_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ",
-#     read_only=True)
-#     closing_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
-#     isOpen = serializers.SerializerMethodField(read_only=True)
-
-#     class Meta:
-#         model = Auction
-#         fields = '__all__'
-
-#     @extend_schema_field(serializers.BooleanField()) 
-#     def get_isOpen(self, obj):
-#         return obj.closing_date > timezone.now()
-
 class AuctionListCreateSerializer(serializers.ModelSerializer):
+    auctioneer_name = serializers.SerializerMethodField()
     creation_date = serializers.DateTimeField(
         format="%Y-%m-%dT%H:%M:%SZ", read_only=True
     )
@@ -53,8 +39,8 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
         max_digits=3, decimal_places=2,
         error_messages={"required": "La valoración es obligatoria."}
     )
-    stock = serializers.IntegerField(error_messages={"required": "El stock es obligatorio."})
-    brand = serializers.CharField(error_messages={"required": "La marca es obligatoria."})
+    stock = serializers.IntegerField(error_messages={"required": "El stock es obligatorio.",})
+    brand = serializers.CharField(error_messages={"required": "La marca es obligatoria.",})
     category = serializers.PrimaryKeyRelatedField(
         queryset=Category.objects.all(),
         error_messages={"required": "La categoría es obligatoria."}
@@ -73,7 +59,7 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
         fields = [
         'id', 'title', 'description', 'price', 'rating', 'stock',
         'brand', 'category', 'category_name', 'thumbnail',
-        'creation_date', 'closing_date', 'isOpen'
+        'creation_date', 'closing_date', 'isOpen', 'auctioneer_name'
     ]
 
     @extend_schema_field(serializers.BooleanField())
@@ -82,17 +68,17 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
 
     def validate_price(self, value):
         if value <= 0:
-            raise serializers.ValidationError("El precio debe ser un número positivo.")
+            raise serializers.ValidationError("Price has to be positive and higher than zero.")
         return value
 
     def validate_stock(self, value):
         if value < 0:
-            raise serializers.ValidationError("El stock no puede ser negativo.")
+            raise serializers.ValidationError("Stock cannot be negative")
         return value
 
     def validate_rating(self, value):
         if not (1 <= value <= 5):
-            raise serializers.ValidationError("La valoración debe estar entre 1 y 5.")
+            raise serializers.ValidationError("Valoration has to be between 1 and 5")
         return value
 
     
@@ -103,13 +89,13 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
         # La fecha de cierre sea posterior a la fecha de creación (actual)
         if closing_date <= creation_time:
             raise serializers.ValidationError({
-                "closing_date": "La fecha de cierre debe ser posterior a la fecha actual."
+                "closing_date": "The closing date must be later than the current date."
             })
 
         # Verifica que la fecha de cierre sea al menos 15 días posterior a la fecha de creación
         if closing_date < creation_time + timedelta(days=15):
             raise serializers.ValidationError({
-                "closing_date": "La fecha de cierre debe ser al menos 15 días posterior a la fecha actual."
+                "closing_date": "The closing date must be at least 15 days after the current date."
             })
 
         return data
@@ -117,8 +103,12 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
     #para poder ver el nombre de la categoría
     def get_category_name(self, obj):
         return obj.category.name
+    
+    def get_auctioneer_name(self, obj):
+        return f"{obj.auctioneer.first_name} {obj.auctioneer.last_name}" if obj.auctioneer else "Anónimo"
 
 class AuctionDetailSerializer(serializers.ModelSerializer):
+    auctioneer_name = serializers.SerializerMethodField()
     creation_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ",
     read_only=True)
     closing_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")   
@@ -128,7 +118,12 @@ class AuctionDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Auction
-        fields = '__all__' 
+        fields = [
+        'id', 'title', 'description', 'price', 'rating', 'stock',
+        'brand', 'category', 'category_name', 'thumbnail',
+        'creation_date', 'closing_date', 'isOpen', 'auctioneer_name'
+    ]
+
 
     @extend_schema_field(serializers.BooleanField()) 
     def get_isOpen(self, obj):
@@ -136,17 +131,17 @@ class AuctionDetailSerializer(serializers.ModelSerializer):
     
     def validate_price(self, value):
         if value <= 0:
-            raise serializers.ValidationError("El precio debe ser un número positivo.")
+            raise serializers.ValidationError("Price has to be positive and higher than zero.")
         return value
 
     def validate_stock(self, value):
         if value < 0:
-            raise serializers.ValidationError("El stock no puede ser negativo.")
+            raise serializers.ValidationError("Stock cannot be negative")
         return value
 
     def validate_rating(self, value):
         if not (1 <= value <= 5):
-            raise serializers.ValidationError("La valoración debe estar entre 1 y 5.")
+            raise serializers.ValidationError("Valoration has to be between 1 and 5")
         return value
 
     
@@ -157,75 +152,121 @@ class AuctionDetailSerializer(serializers.ModelSerializer):
         # La fecha de cierre sea posterior a la fecha de creación (actual)
         if closing_date <= creation_time:
             raise serializers.ValidationError({
-                "closing_date": "La fecha de cierre debe ser posterior a la fecha actual."
+                "closing_date": "The closing date must be later than the current date."
             })
 
         # Verifica que la fecha de cierre sea al menos 15 días posterior a la fecha de creación
         if closing_date < creation_time + timedelta(days=15):
             raise serializers.ValidationError({
-                "closing_date": "La fecha de cierre debe ser al menos 15 días posterior a la fecha actual."
+                "closing_date": "The closing date must be at least 15 days after the current date."
             })
 
         return data
     
     def get_category_name(self, obj):
         return obj.category.name
-
+    
+    def get_auctioneer_name(self, obj):
+        return f"{obj.auctioneer.first_name} {obj.auctioneer.last_name}" if obj.auctioneer else "Anónimo"
     
 class BidListCreateSerializer(serializers.ModelSerializer):
-    creation_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ", 
-    read_only=True) 
-    bidder = serializers.CharField(read_only=True)
-    class Meta: 
-        model = Bid 
-        fields = ['id', 'auction', 'price', 'creation_date','bidder']
+    creation_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ", read_only=True)
+    bidder = serializers.StringRelatedField(read_only=True)
+    auction = serializers.PrimaryKeyRelatedField(read_only=True)
+    auction_title = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Bid
+        fields = ['id', 'auction', 'auction_title', 'price', 'creation_date', 'bidder']
 
     def validate_price(self, value):
         if value <= 0:
             raise serializers.ValidationError("El precio debe ser positivo.")
         return value
-    
-    def validate(self, data):
-        auction = data.get('auction')
-        price = data.get('price')
 
-        if auction.closing_date < timezone.now():
-            raise serializers.ValidationError("La subasta está cerrada.")
+    def validate(self, data):
+        request = self.context.get("request")
+        auction = self.context.get("auction")
+
+        if not auction:
+            raise serializers.ValidationError("La subasta asociada no está definida.")
+
+        price = data.get("price")
 
         highest_bid = auction.bids.order_by('-price').first()
         if highest_bid and price <= highest_bid.price:
             raise serializers.ValidationError("La puja debe ser mayor que la anterior.")
-        if not highest_bid and price <= auction.price:  # <-- Aquí estaba el error
+        if not highest_bid and price <= auction.price:
             raise serializers.ValidationError("La puja debe ser mayor que el precio inicial.")
-        
+
         return data
 
+    def get_auction_title(self, obj):
+        return obj.auction.title
 
-    
+
+
 class BidDetailSerializer(serializers.ModelSerializer):
     creation_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ", 
     read_only=True) 
+    auction_title = serializers.SerializerMethodField()
 
     class Meta: 
         model = Bid 
-        fields = '__all__' 
+        #fields = '__all__' 
+        fields = ['id', 'price', 'creation_date', 'auction', 'auction_title']
 
-    #le permitimos modificar las pujas?
     def validate_price(self, value):
         if value <= 0:
             raise serializers.ValidationError("El precio debe ser positivo.")
         return value
     
     def validate(self, data):
-        auction = data.get('auction')
+        #auction = data.get('auction')
+        auction = data.get('auction', getattr(self.instance, 'auction', None))
         price = data.get('price')
 
         if auction.closing_date < timezone.now():
-            raise serializers.ValidationError("La subasta está cerrada.")
+            raise serializers.ValidationError("Auction is closed.")
 
         highest_bid = auction.bids.order_by('-price').first()
         if highest_bid and price <= highest_bid.price:
-            raise serializers.ValidationError("La puja debe ser mayor que la anterior.")
+            raise serializers.ValidationError("The bid must be higher than the previous one.")
         if not highest_bid and price <= auction.starting_price:
-            raise serializers.ValidationError("La puja debe ser mayor que el precio inicial.")
+            raise serializers.ValidationError("The bid must be higher than the starting price.")
+        return data
+    
+    def get_auction_title(self, obj):
+        return obj.auction.title
+    
+
+class UserBidSerializer(serializers.ModelSerializer):
+    auction_title = serializers.SerializerMethodField()
+    creation_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ", read_only=True)
+    bidder = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = Bid
+        fields = ['id', 'auction', 'auction_title', 'price', 'creation_date', 'bidder']
+
+    def get_auction_title(self, obj):
+        return obj.auction.title if obj.auction else ""
+    
+    def validate(self, data):
+        auction = data.get('auction')
+        price = data.get('price')
+        user = self.context['request'].user
+
+        if auction.closing_date < timezone.now():
+            raise serializers.ValidationError("Auction is closed.")
+
+        highest_bid = auction.bids.order_by('-price').first()
+        if highest_bid and price <= highest_bid.price:
+            raise serializers.ValidationError("The bid must be higher than the previous one.")
+
+        # Si el usuario ya tiene una puja, que solo pueda mejorarla
+        existing_user_bid = auction.bids.filter(bidder=user).first()
+        if existing_user_bid and price <= existing_user_bid.price:
+            raise serializers.ValidationError("You must increase your previous bid.")
+
         return data

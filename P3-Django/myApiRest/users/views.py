@@ -36,7 +36,12 @@ class UserListView(generics.ListAPIView):
 class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView): 
     permission_classes = [IsAdminUser] 
     serializer_class = UserSerializer 
-    queryset = CustomUser.objects.all()         
+    queryset = CustomUser.objects.all()   
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user      
+
 
 class UserProfileView(APIView): 
     permission_classes = [IsAuthenticated] 

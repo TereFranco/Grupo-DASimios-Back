@@ -19,9 +19,11 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView 
 from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView) 
 from users.views import CustomTokenObtainPairView
+from auctions.views import UserBidListView
 
 urlpatterns = [ 
     path("api/auctions/", include("auctions.urls")), 
+    path("api/bids/users/", UserBidListView.as_view(), name="user-bids"),
     path("api/users/", include("users.urls")), 
     #path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'), 
     path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),

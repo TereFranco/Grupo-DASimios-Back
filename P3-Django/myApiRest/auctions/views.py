@@ -1,13 +1,14 @@
 from django.shortcuts import render
 from rest_framework import generics
 from .models import Category, Auction, Bid
-from .serializers import CategoryListCreateSerializer, CategoryDetailSerializer, AuctionListCreateSerializer, AuctionDetailSerializer, BidDetailSerializer, BidListCreateSerializer
+from .serializers import CategoryListCreateSerializer, CategoryDetailSerializer, AuctionListCreateSerializer, AuctionDetailSerializer, BidDetailSerializer, BidListCreateSerializer, UserBidSerializer
 from django.db.models import Q
 from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView 
 from rest_framework.permissions import IsAuthenticated 
 from rest_framework.response import Response 
 from .permissions import IsOwnerOrAdmin 
+from django.utils import timezone
  
 # Create your views here.
 class CategoryListCreate(generics.ListCreateAPIView):
@@ -18,16 +19,6 @@ class CategoryListCreate(generics.ListCreateAPIView):
 class CategoryRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategoryDetailSerializer
- 
- 
-# class AuctionListCreate(generics.ListCreateAPIView):
-#     queryset = Auction.objects.all()
-#     serializer_class = AuctionListCreateSerializer
- 
- 
-# class AuctionRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = Auction.objects.all()
-#     serializer_class = AuctionDetailSerializer
 
 class AuctionRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsOwnerOrAdmin]  
@@ -41,18 +32,21 @@ class AuctionRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         except Auction.DoesNotExist:
             raise NotFound(detail="La subasta solicitada no existe.")
         return auction
- 
+
 class BidListCreate(generics.ListCreateAPIView):
     serializer_class = BidListCreateSerializer
- 
-    def get_queryset(self): #sobreescribimos este método para devovler lo que queremos
+
+    def get_queryset(self):
         return Bid.objects.filter(auction_id=self.kwargs['auction_id'])
-   
-    #recibe el serializador #metodo que recibe es POST
-    def perform_create(self,serializer): #sobreescribimos este método para crear una puja tenemos que meter el id_auctions
-        auction_id=self.kwargs['auction_id'] #tenemos que añadir al POST el id del auction
-        serializer.save(auction_id=auction_id, bidder=self.request.user)
-   
+
+    def perform_create(self, serializer):
+        auction = Auction.objects.get(id=self.kwargs['auction_id'])
+        serializer.save(auction=auction, bidder=self.request.user)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['auction'] = Auction.objects.get(id=self.kwargs['auction_id'])
+        return context
  
 class BidRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = BidDetailSerializer
@@ -104,8 +98,16 @@ class UserAuctionListView(APIView):
         user_auctions = Auction.objects.filter(auctioneer=request.user) 
         serializer = AuctionListCreateSerializer(user_auctions, many=True) 
         return Response(serializer.data) 
- 
- 
+
+class UserBidListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        bids = Bid.objects.filter(bidder=request.user).select_related("auction")
+        serializer = UserBidSerializer(bids, many=True)
+        return Response(serializer.data)
+    
+    
 """
 Texto: http://127.0.0.1:8000/api/auctions/?texto=iphone
  
