@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import CategoryListCreate, CategoryRetrieveUpdateDestroy, AuctionListCreate, AuctionRetrieveUpdateDestroy, BidListCreate, BidRetrieveUpdateDestroy, UserAuctionListView, RatingListCreateView, RatingUpdateDeleteView
+from .views import CategoryListCreate, CategoryRetrieveUpdateDestroy, AuctionListCreate, AuctionRetrieveUpdateDestroy, BidListCreate, BidRetrieveUpdateDestroy, UserAuctionListView, RatingListCreateView, RatingUpdateDeleteView, CommentListCreateView, CommentDetailView
 
 app_name="auctions" 
 
@@ -13,4 +13,6 @@ urlpatterns = [
     path('users/', UserAuctionListView.as_view(), name='action-from-users'), 
     path('ratings/', RatingListCreateView.as_view(), name='rating-list-create'),
     path('ratings/<int:pk>/', RatingUpdateDeleteView.as_view(), name='rating-update-delete'),
+    path('<int:auction_id>/comments/', CommentListCreateView.as_view(), name='comment-list-create'),
+    path('comments/<int:pk>/', CommentDetailView.as_view(), name='comment-detail'),
     ] 

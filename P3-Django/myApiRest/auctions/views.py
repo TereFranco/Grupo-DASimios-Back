@@ -1,7 +1,7 @@
 from django.shortcuts import render
-from rest_framework import generics
-from .models import Category, Auction, Bid, Rating
-from .serializers import CategoryListCreateSerializer, CategoryDetailSerializer, AuctionListCreateSerializer, AuctionDetailSerializer, BidDetailSerializer, BidListCreateSerializer, UserBidSerializer, RatingListCreateSerializer, RatingUpdateRetrieveSerializer
+from rest_framework import generics, permissions
+from .models import Category, Auction, Bid, Rating, Comment
+from .serializers import CategoryListCreateSerializer, CategoryDetailSerializer, AuctionListCreateSerializer, AuctionDetailSerializer, BidDetailSerializer, BidListCreateSerializer, UserBidSerializer, RatingListCreateSerializer, RatingUpdateRetrieveSerializer, CommentSerializer
 from django.db.models import Q
 from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView 
@@ -129,7 +129,29 @@ class RatingUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self): #sobreescribimos este método para devovler lo que queremos
         return Rating.objects.filter(auction_id=self.kwargs['rating_id'])
-   
+    
+
+class CommentListCreateView(generics.ListCreateAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        auction_id = self.kwargs.get('auction_id')
+        return Comment.objects.filter(auction_id=auction_id)
+
+    def perform_create(self, serializer):
+        auction_id = self.kwargs.get('auction_id')
+        serializer.save(user=self.request.user, auction_id=auction_id)
+
+
+class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def perform_update(self, serializer):
+        serializer.save(updated_at=timezone.now())
+
 """
 Texto: http://127.0.0.1:8000/api/auctions/?texto=iphone
  

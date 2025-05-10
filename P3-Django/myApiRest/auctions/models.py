@@ -16,7 +16,7 @@ class Auction(models.Model):
     title = models.CharField(max_length=150)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    #rating = models.DecimalField(max_digits=3, decimal_places=2)
+    # rating = models.DecimalField(max_digits=3, decimal_places=2)
     stock = models.IntegerField()
     brand = models.CharField(max_length=100)
     category = models.ForeignKey(Category, related_name='auctions',
@@ -55,3 +55,18 @@ class Rating(models.Model):
 
     class Meta:  
         unique_together = ('user', 'auction')
+
+
+class Comment(models.Model):
+    title = models.CharField(max_length=100)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    auction = models.ForeignKey(Auction, related_name="comments", on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, related_name="comments", on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Comment by {self.user} on {self.auction}"

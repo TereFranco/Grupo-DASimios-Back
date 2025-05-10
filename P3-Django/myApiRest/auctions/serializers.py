@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.utils import timezone
-from .models import Category, Auction, Bid, Rating
+from .models import Category, Auction, Bid, Rating, Comment
 from drf_spectacular.utils import extend_schema_field
 from rest_framework.exceptions import NotFound, ValidationError
 from datetime import timedelta
@@ -35,10 +35,10 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
         max_digits=10, decimal_places=2,
         error_messages={"required": "El precio es obligatorio."}
     )
-    rating = serializers.DecimalField(
-        max_digits=3, decimal_places=2,
-        error_messages={"required": "La valoración es obligatoria."}
-    )
+    # rating = serializers.DecimalField(
+    #     max_digits=3, decimal_places=2,
+    #     error_messages={"required": "La valoración es obligatoria."}
+    # )
     stock = serializers.IntegerField(error_messages={"required": "El stock es obligatorio.",})
     brand = serializers.CharField(error_messages={"required": "La marca es obligatoria.",})
     category = serializers.PrimaryKeyRelatedField(
@@ -57,7 +57,7 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Auction
         fields = [
-        'id', 'title', 'description', 'price', 'rating', 'stock',
+        'id', 'title', 'description', 'price', 'stock',
         'brand', 'category', 'category_name', 'thumbnail',
         'creation_date', 'closing_date', 'isOpen', 'auctioneer_name'
     ]
@@ -302,3 +302,11 @@ class RatingUpdateRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rating
         fields = ['rating']
+
+class CommentSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source='user.username')
+    auction_title = serializers.ReadOnlyField(source='auction.title')
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'title', 'content', 'created_at', 'updated_at', 'user', 'auction', 'auction_title']
