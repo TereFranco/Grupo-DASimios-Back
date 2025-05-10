@@ -1,7 +1,7 @@
 from django.shortcuts import render
-from rest_framework import generics
-from .models import Category, Auction, Bid
-from .serializers import CategoryListCreateSerializer, CategoryDetailSerializer, AuctionListCreateSerializer, AuctionDetailSerializer, BidDetailSerializer, BidListCreateSerializer, UserBidSerializer
+from rest_framework import generics, permissions
+from .models import Category, Auction, Bid, Rating, Comment
+from .serializers import CategoryListCreateSerializer, CategoryDetailSerializer, AuctionListCreateSerializer, AuctionDetailSerializer, BidDetailSerializer, BidListCreateSerializer, UserBidSerializer, RatingListCreateSerializer, RatingUpdateRetrieveSerializer, CommentSerializer
 from django.db.models import Q
 from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView 
@@ -99,7 +99,7 @@ class UserAuctionListView(APIView):
         serializer = AuctionListCreateSerializer(user_auctions, many=True) 
         return Response(serializer.data) 
 
-class UserBidListView(APIView):
+class UserBidListView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -107,7 +107,51 @@ class UserBidListView(APIView):
         serializer = UserBidSerializer(bids, many=True)
         return Response(serializer.data)
     
+
+class RatingListCreateView(APIView):
+    serializer_class = RatingListCreateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        auction_id = self.request.query_params.get('auction')
+        if auction_id:
+            return Rating.objects.filter(auction_id=auction_id)
+        return Rating.objects.all()
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class RatingUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Rating.objects.all()
+    serializer_class = RatingUpdateRetrieveSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self): #sobreescribimos este método para devovler lo que queremos
+        return Rating.objects.filter(auction_id=self.kwargs['rating_id'])
     
+
+class CommentListCreateView(generics.ListCreateAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        auction_id = self.kwargs.get('auction_id')
+        return Comment.objects.filter(auction_id=auction_id)
+
+    def perform_create(self, serializer):
+        auction_id = self.kwargs.get('auction_id')
+        serializer.save(user=self.request.user, auction_id=auction_id)
+
+
+class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def perform_update(self, serializer):
+        serializer.save(updated_at=timezone.now())
+
 """
 Texto: http://127.0.0.1:8000/api/auctions/?texto=iphone
  
