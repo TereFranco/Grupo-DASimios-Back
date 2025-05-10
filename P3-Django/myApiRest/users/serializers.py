@@ -1,0 +1,32 @@
+from rest_framework import serializers 
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from .models import CustomUser 
+
+class UserSerializer(serializers.ModelSerializer): 
+    class Meta: 
+        model = CustomUser 
+        fields = ('id', 'username', 'email', 'birth_date', 'municipality', 
+        'locality', 'password', 'first_name', 'last_name') 
+        extra_kwargs = { 
+        'password': {'write_only': True}, 
+        } 
+
+    def validate_email(self, value): 
+        user = self.instance  # Solo tiene valor cuando se está actualizando 
+        if CustomUser.objects.filter(email=value).exclude(pk=user.pk if user else None).exists(): 
+            raise serializers.ValidationError("Email already in used.") 
+        return value 
+        
+    def create(self, validated_data): 
+        return CustomUser.objects.create_user(**validated_data) 
+    
+class ChangePasswordSerializer(serializers.Serializer): 
+    old_password = serializers.CharField(required=True) 
+    new_password = serializers.CharField(required=True) 
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        data['username'] = self.user.username  
+        return data

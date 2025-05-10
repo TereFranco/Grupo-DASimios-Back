@@ -14,15 +14,22 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.urls import path, include
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from django.contrib import admin 
+from django.urls import include, path 
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView 
+from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView) 
+from users.views import CustomTokenObtainPairView
+from auctions.views import UserBidListView
 
-
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/auctions/', include('auctions.urls')),
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'),
-    name='swagger-ui')
-]
+urlpatterns = [ 
+    path("api/auctions/", include("auctions.urls")), 
+    path("api/bids/users/", UserBidListView.as_view(), name="user-bids"),
+    path("api/users/", include("users.urls")), 
+    #path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'), 
+    path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'), 
+    path("admin/", admin.site.urls), 
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'), 
+    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), 
+    name='swagger-ui'), 
+    ] 

@@ -1,0 +1,24 @@
+# Entorno virtual
+djangoServer/
+venv/
+.env/
+
+# Archivos de Python compilados
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Archivos de log
+*.log
+
+# Archivos de base de datos locales
+*.sqlite3
+
+# Archivos de configuración del IDE/editor
+.vscode/
+.idea/
+*.swp
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
