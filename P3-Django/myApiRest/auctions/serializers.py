@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.utils import timezone
-from .models import Category, Auction, Bid
+from .models import Category, Auction, Bid, Rating
 from drf_spectacular.utils import extend_schema_field
 from rest_framework.exceptions import NotFound, ValidationError
 from datetime import timedelta
@@ -114,14 +114,15 @@ class AuctionDetailSerializer(serializers.ModelSerializer):
     closing_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")   
     isOpen = serializers.SerializerMethodField(read_only=True)
     category_name = serializers.SerializerMethodField(read_only=True)
-    #aquí se deberían ver las pujas?
+    valoracion = serializers.SerializerMethodField()
 
     class Meta:
         model = Auction
         fields = [
-        'id', 'title', 'description', 'price', 'rating', 'stock',
+        'id', 'title', 'description', 'price', 'stock',
         'brand', 'category', 'category_name', 'thumbnail',
-        'creation_date', 'closing_date', 'isOpen', 'auctioneer_name'
+        'creation_date', 'closing_date', 'isOpen', 'auctioneer_name', 
+        'valoracion'
     ]
 
 
@@ -169,6 +170,9 @@ class AuctionDetailSerializer(serializers.ModelSerializer):
     def get_auctioneer_name(self, obj):
         return f"{obj.auctioneer.first_name} {obj.auctioneer.last_name}" if obj.auctioneer else "Anónimo"
     
+    def get_valoracion(self, obj):
+        return obj.valoracion_media()
+
 class BidListCreateSerializer(serializers.ModelSerializer):
     creation_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ", read_only=True)
     bidder = serializers.StringRelatedField(read_only=True)
@@ -270,3 +274,31 @@ class UserBidSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("You must increase your previous bid.")
 
         return data
+    
+
+class RatingListCreateSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source='user.username') 
+    auction = serializers.PrimaryKeyRelatedField(queryset=Auction.objects.all())
+    
+    class Meta:
+        model = Rating
+        fields = ['id', 'rating', 'user', 'auction']
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        auction = validated_data['auction']
+        value = validated_data['rating']
+        
+        # actualizar si ya existe
+        rating, created = Rating.objects.update_or_create(
+            user=user,
+            auction=auction,
+            defaults={'rating': value}
+        )
+        return rating
+
+
+class RatingUpdateRetrieveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rating
+        fields = ['rating']
