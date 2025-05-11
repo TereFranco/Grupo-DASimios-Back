@@ -31,9 +31,6 @@ class Auction(models.Model):
     def __str__(self):
         return self.title
     
-    def valoracion_media(self):
-        promedio = self.ratings.aggregate(Avg("rating"))["rating__avg"]
-        return round(promedio, 2) if promedio is not None else 1
 
 class Bid(models.Model): 
     auction = models.ForeignKey(Auction, related_name='bids', on_delete=models.CASCADE)
