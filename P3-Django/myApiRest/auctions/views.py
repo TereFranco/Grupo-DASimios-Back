@@ -118,7 +118,8 @@ class RatingListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         auction_id = self.kwargs.get('auction_id')
-        serializer.save(user=self.request.user, auction_id=auction_id)
+        auction = Auction.objects.get(pk=auction_id)
+        serializer.save(user=self.request.user, auction=auction)
 
 
 class RatingUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):

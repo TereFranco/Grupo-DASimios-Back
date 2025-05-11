@@ -278,7 +278,7 @@ class UserBidSerializer(serializers.ModelSerializer):
 
 class RatingListCreateSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username') 
-    auction = serializers.PrimaryKeyRelatedField(queryset=Auction.objects.all())
+    auction = serializers.PrimaryKeyRelatedField(read_only=True)
     
     class Meta:
         model = Rating
