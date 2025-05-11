@@ -114,15 +114,13 @@ class AuctionDetailSerializer(serializers.ModelSerializer):
     closing_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")   
     isOpen = serializers.SerializerMethodField(read_only=True)
     category_name = serializers.SerializerMethodField(read_only=True)
-    valoracion = serializers.SerializerMethodField()
 
     class Meta:
         model = Auction
         fields = [
         'id', 'title', 'description', 'price', 'stock',
         'brand', 'category', 'category_name', 'thumbnail',
-        'creation_date', 'closing_date', 'isOpen', 'auctioneer_name', 
-        'valoracion'
+        'creation_date', 'closing_date', 'isOpen', 'auctioneer_name'
     ]
 
 
@@ -170,8 +168,6 @@ class AuctionDetailSerializer(serializers.ModelSerializer):
     def get_auctioneer_name(self, obj):
         return f"{obj.auctioneer.first_name} {obj.auctioneer.last_name}" if obj.auctioneer else "Anónimo"
     
-    def get_valoracion(self, obj):
-        return obj.valoracion_media()
 
 class BidListCreateSerializer(serializers.ModelSerializer):
     creation_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ", read_only=True)
