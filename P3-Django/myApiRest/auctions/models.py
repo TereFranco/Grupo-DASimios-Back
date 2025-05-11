@@ -1,7 +1,7 @@
 from django.db import models
 from users.models import CustomUser 
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db.models import Avg
+
 # Create your models here.
 
 class Category(models.Model):

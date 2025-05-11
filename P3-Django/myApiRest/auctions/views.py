@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response 
 from .permissions import IsOwnerOrAdmin 
 from django.utils import timezone
+from django.db.models import Avg
  
 # Create your views here.
 class CategoryListCreate(generics.ListCreateAPIView):
@@ -120,6 +121,19 @@ class RatingListCreateView(generics.ListCreateAPIView):
         auction_id = self.kwargs.get('auction_id')
         auction = Auction.objects.get(pk=auction_id)
         serializer.save(user=self.request.user, auction=auction)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+
+        # Calcular la media con Avg
+        media = queryset.aggregate(avg_rating=Avg("rating"))["avg_rating"] or 1
+        media = round(media, 2)
+
+        return Response({
+            "results": serializer.data,
+            "media": media
+        })
 
 
 class RatingUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
