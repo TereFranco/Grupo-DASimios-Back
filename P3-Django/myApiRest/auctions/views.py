@@ -111,7 +111,7 @@ class UserBidListView(generics.ListCreateAPIView):
 
 class RatingListCreateView(generics.ListCreateAPIView):
     serializer_class = RatingListCreateSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
         auction_id = self.kwargs.get('auction_id')
@@ -139,7 +139,7 @@ class RatingListCreateView(generics.ListCreateAPIView):
 class RatingUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Rating.objects.all()
     serializer_class = RatingUpdateRetrieveSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def perform_update(self, serializer):
         serializer.save(updated_at=timezone.now())
