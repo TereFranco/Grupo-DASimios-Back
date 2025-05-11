@@ -108,18 +108,17 @@ class UserBidListView(generics.ListCreateAPIView):
         return Response(serializer.data)
     
 
-class RatingListCreateView(APIView):
+class RatingListCreateView(generics.ListCreateAPIView):
     serializer_class = RatingListCreateSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        auction_id = self.request.query_params.get('auction')
-        if auction_id:
-            return Rating.objects.filter(auction_id=auction_id)
-        return Rating.objects.all()
+        auction_id = self.kwargs.get('auction_id')
+        return Rating.objects.filter(auction_id=auction_id)
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        auction_id = self.kwargs.get('auction_id')
+        serializer.save(user=self.request.user, auction_id=auction_id)
 
 
 class RatingUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
@@ -127,9 +126,8 @@ class RatingUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = RatingUpdateRetrieveSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self): #sobreescribimos este método para devovler lo que queremos
-        return Rating.objects.filter(auction_id=self.kwargs['rating_id'])
-    
+    def perform_update(self, serializer):
+        serializer.save(updated_at=timezone.now())
 
 class CommentListCreateView(generics.ListCreateAPIView):
     serializer_class = CommentSerializer

@@ -299,9 +299,11 @@ class RatingListCreateSerializer(serializers.ModelSerializer):
 
 
 class RatingUpdateRetrieveSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source='user.username')
+
     class Meta:
         model = Rating
-        fields = ['rating']
+        fields = ['id', 'rating', 'user', 'auction']
 
 class CommentSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')

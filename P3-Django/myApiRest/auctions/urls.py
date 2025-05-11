@@ -11,8 +11,8 @@ urlpatterns = [
     path('<int:auction_id>/bid/', BidListCreate.as_view(), name='bid-list-create'), 
     path('<int:auction_id>/bid/<int:pk>/', BidRetrieveUpdateDestroy.as_view(), name='bid-detail'), 
     path('users/', UserAuctionListView.as_view(), name='action-from-users'), 
-    path('ratings/', RatingListCreateView.as_view(), name='rating-list-create'),
-    path('ratings/<int:pk>/', RatingUpdateDeleteView.as_view(), name='rating-update-delete'),
+    path('<int:auction_id>/ratings/', RatingListCreateView.as_view(), name='rating-list-create'),
+    path('<int:auction_id>/ratings/<int:pk>/', RatingUpdateDeleteView.as_view(), name='rating-update-delete'),
     path('<int:auction_id>/comments/', CommentListCreateView.as_view(), name='comment-list-create'),
     path('comments/<int:pk>/', CommentDetailView.as_view(), name='comment-detail'),
     ] 
