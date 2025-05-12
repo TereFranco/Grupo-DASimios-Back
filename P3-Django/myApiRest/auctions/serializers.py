@@ -4,7 +4,7 @@ from .models import Category, Auction, Bid, Rating, Comment
 from drf_spectacular.utils import extend_schema_field
 from rest_framework.exceptions import NotFound, ValidationError
 from datetime import timedelta
-
+from django.db.models import Avg
 
 
 class CategoryListCreateSerializer(serializers.ModelSerializer):
@@ -53,13 +53,14 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
     )
     isOpen = serializers.SerializerMethodField(read_only=True)
     category_name = serializers.SerializerMethodField(read_only=True)
+    media_rating = serializers.SerializerMethodField(read_only=True) 
 
     class Meta:
         model = Auction
         fields = [
         'id', 'title', 'description', 'price', 'stock',
         'brand', 'category', 'category_name', 'thumbnail',
-        'creation_date', 'closing_date', 'isOpen', 'auctioneer_name'
+        'creation_date', 'closing_date', 'isOpen', 'auctioneer_name', 'media_rating'
     ]
 
     @extend_schema_field(serializers.BooleanField())
@@ -81,6 +82,9 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Valoration has to be between 1 and 5")
         return value
 
+    def get_media_rating(self, obj):
+        avg = obj.ratings.aggregate(Avg("rating"))["rating__avg"]
+        return round(avg or 0, 2)
     
     def validate(self, data):
         closing_date = data.get("closing_date")

@@ -188,6 +188,28 @@ class UserCommentListView(APIView):
             for c in comentarios
         ]
         return Response(data)
+    
+class UserRatingListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        ratings = Rating.objects.filter(user=request.user).select_related('auction', 'auction__category')
+        data = [
+            {
+                "id": r.id,
+                "rating": r.rating,
+                "auction": {
+                    "id": r.auction.id,
+                    "title": r.auction.title,
+                    "price": r.auction.price,
+                    "category": r.auction.category.name,
+                    "is_open": r.auction.closing_date > timezone.now(),
+                }
+            }
+            for r in ratings
+        ]
+        return Response(data)
+
 
 
 """
