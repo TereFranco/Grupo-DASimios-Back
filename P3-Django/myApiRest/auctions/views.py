@@ -65,6 +65,7 @@ class AuctionListCreate(generics.ListCreateAPIView):
         categoria = self.request.query_params.get('category_id')
         precio_min = self.request.query_params.get('min_price')
         precio_max = self.request.query_params.get('max_price')
+        estado = self.request.query_params.get('estado')
  
         # Filtrar por texto (en título o descripción)
         if texto:
@@ -85,6 +86,11 @@ class AuctionListCreate(generics.ListCreateAPIView):
             queryset = queryset.filter(price__gte=precio_min)
         if precio_max:
             queryset = queryset.filter(price__lte=precio_max)
+        
+        if estado == "abierta":
+            queryset = queryset.filter(closing_date__gt=timezone.now())
+        elif estado == "cerrada":
+            queryset = queryset.filter(closing_date__lte=timezone.now())
  
         return queryset
     
