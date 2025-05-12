@@ -152,6 +152,32 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     def perform_update(self, serializer):
         serializer.save(updated_at=timezone.now())
 
+class UserCommentListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        comentarios = Comment.objects.filter(user=request.user).select_related('auction', 'auction__category')
+        data = [
+            {
+                "id": c.id,
+                "title": c.title,
+                "content": c.content,
+                "created_at": c.created_at,
+                "updated_at": c.updated_at,
+                "auction": {
+                    "id": c.auction.id,
+                    "title": c.auction.title,
+                    "price": c.auction.price,
+                    "category": c.auction.category.name,
+                    "is_open": c.auction.closing_date > timezone.now()
+                }
+            }
+            for c in comentarios
+        ]
+        return Response(data)
+
+
+
 """
 Texto: http://127.0.0.1:8000/api/auctions/?texto=iphone
  
