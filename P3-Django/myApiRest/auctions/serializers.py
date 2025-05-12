@@ -45,12 +45,7 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
         queryset=Category.objects.all(),
         error_messages={"required": "La categoría es obligatoria."}
     )
-    thumbnail = serializers.URLField(
-        error_messages={
-            "required": "La URL de la imagen es obligatoria.",
-            "invalid": "Introduce una URL válida."
-        }
-    )
+    thumbnail = serializers.ImageField(required=True)
     isOpen = serializers.SerializerMethodField(read_only=True)
     category_name = serializers.SerializerMethodField(read_only=True)
     media_rating = serializers.SerializerMethodField(read_only=True) 
