@@ -1,7 +1,7 @@
 from django.db import models
 from users.models import CustomUser 
 from django.core.validators import MaxValueValidator, MinValueValidator
-
+from django.core.validators import FileExtensionValidator
 # Create your models here.
 
 class Category(models.Model):
@@ -21,7 +21,12 @@ class Auction(models.Model):
     brand = models.CharField(max_length=100)
     category = models.ForeignKey(Category, related_name='auctions',
     on_delete=models.CASCADE)
-    thumbnail = models.URLField()
+    thumbnail = models.ImageField(
+        upload_to='thumbnails/',
+        validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])],
+        null=True,
+        blank=True
+    )
     creation_date = models.DateTimeField(auto_now_add=True)
     closing_date = models.DateTimeField()
     auctioneer = models.ForeignKey(CustomUser, related_name='auctions', on_delete=models.CASCADE) 
