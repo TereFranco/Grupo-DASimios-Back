@@ -71,3 +71,16 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"Comment by {self.user} on {self.auction}"
+    
+
+
+class WalletTransaction(models.Model):
+    user = models.ForeignKey(CustomUser, related_name="wallet_transactions", on_delete=models.CASCADE)
+    card_number = models.CharField(max_length=19)  # Se validará que tenga entre 13-19 dígitos
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    is_deposit = models.BooleanField()  # True = ingreso, False = retiro
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        tipo = "Ingreso" if self.is_deposit else "Retiro"
+        return f"{tipo} de {self.amount}€ por {self.user.username}"

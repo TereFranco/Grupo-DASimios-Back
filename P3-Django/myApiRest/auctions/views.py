@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import generics, permissions
-from .models import Category, Auction, Bid, Rating, Comment
-from .serializers import CategoryListCreateSerializer, CategoryDetailSerializer, AuctionListCreateSerializer, AuctionDetailSerializer, BidDetailSerializer, BidListCreateSerializer, UserBidSerializer, RatingListCreateSerializer, RatingUpdateRetrieveSerializer, CommentSerializer
+from .models import Category, Auction, Bid, Rating, Comment, WalletTransaction
+from .serializers import CategoryListCreateSerializer, CategoryDetailSerializer, AuctionListCreateSerializer, AuctionDetailSerializer, BidDetailSerializer, BidListCreateSerializer, UserBidSerializer, RatingListCreateSerializer, RatingUpdateRetrieveSerializer, CommentSerializer, WalletTransactionSerializer
 from django.db.models import Q
 from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView 
@@ -216,6 +216,26 @@ class UserRatingListView(APIView):
         ]
         return Response(data)
 
+class WalletTransactionView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = WalletTransactionSerializer
+
+    def get_queryset(self):
+        return WalletTransaction.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class WalletBalanceView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        total = sum([
+            t.amount if t.is_deposit else -t.amount
+            for t in request.user.wallet_transactions.all()
+        ])
+        return Response({'saldo_actual': round(total, 2)})
 
 
 """

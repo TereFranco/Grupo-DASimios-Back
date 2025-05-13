@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.utils import timezone
-from .models import Category, Auction, Bid, Rating, Comment
+from .models import Category, Auction, Bid, Rating, Comment, WalletTransaction
 from drf_spectacular.utils import extend_schema_field
 from rest_framework.exceptions import NotFound, ValidationError
 from datetime import timedelta
@@ -307,3 +307,29 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ['id', 'title', 'content', 'created_at', 'updated_at', 'user', 'auction', 'auction_title']
+
+
+class WalletTransactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WalletTransaction
+        fields = ['id', 'card_number', 'amount', 'is_deposit', 'created_at']
+
+    def validate(self, data):
+        card = data['card_number']
+        amount = data['amount']
+
+        if not card.isdigit() or not (13 <= len(card) <= 19):
+            raise serializers.ValidationError("El número de tarjeta debe contener solo dígitos y tener entre 13 y 19 caracteres.")
+        if amount <= 10:
+            raise serializers.ValidationError("La cantidad debe ser mayor a 10€.")
+
+        if not data['is_deposit']:
+            user = self.context['request'].user
+            total = sum([
+                t.amount if t.is_deposit else -t.amount
+                for t in user.wallet_transactions.all()
+            ])
+            if amount > total:
+                raise serializers.ValidationError("No tienes suficiente saldo para retirar esa cantidad.")
+
+        return data
