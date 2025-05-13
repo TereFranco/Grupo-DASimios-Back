@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework import generics, permissions
 from .models import Category, Auction, Bid, Rating, Comment, WalletTransaction
 from .serializers import CategoryListCreateSerializer, CategoryDetailSerializer, AuctionListCreateSerializer, AuctionDetailSerializer, BidDetailSerializer, BidListCreateSerializer, UserBidSerializer, RatingListCreateSerializer, RatingUpdateRetrieveSerializer, CommentSerializer, WalletTransactionSerializer
+from decimal import Decimal
 from django.db.models import Q
 from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView 
@@ -227,16 +228,23 @@ class WalletTransactionView(generics.ListCreateAPIView):
         serializer.save(user=self.request.user)
 
 
+
 class WalletBalanceView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        total = sum([
-            t.amount if t.is_deposit else -t.amount
-            for t in request.user.wallet_transactions.all()
-        ])
-        return Response({'saldo_actual': round(total, 2)})
+        try:
+            transactions = request.user.wallet_transactions.all()
+            total = Decimal("0.00")
+            for t in transactions:
+                if t.amount is not None:
+                    total += t.amount if t.is_deposit else -t.amount
 
+            return Response({'saldo_actual': round(total, 2)})
+        except Exception as e:
+            # Esto te ayudará a depurar en local o en logs
+            print("❌ Error en WalletBalanceView:", str(e))
+            return Response({'detail': 'Error interno al calcular el saldo.'}, status=500)
 
 """
 Texto: http://127.0.0.1:8000/api/auctions/?texto=iphone
