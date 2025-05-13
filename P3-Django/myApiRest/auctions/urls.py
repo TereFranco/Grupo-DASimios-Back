@@ -19,6 +19,6 @@ urlpatterns = [
     path('user/ratings/', UserRatingListView.as_view(), name='user-ratings'),
     path('wallet/', WalletTransactionView.as_view(), name='wallet-transactions'),
     path('wallet/balance/', WalletBalanceView.as_view(), name='wallet-balance'),
-    path('<int:auction_id>/cobrar/', CobrarSubastaView.as_view(), name='cobrar-subasta'),
+    #path('<int:auction_id>/cobrar/', CobrarSubastaView.as_view(), name='cobrar-subasta'),
 
     ] 

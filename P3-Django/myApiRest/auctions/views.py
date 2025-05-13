@@ -245,52 +245,52 @@ class WalletBalanceView(APIView):
             return Response({'detail': 'Error interno al calcular el saldo.'}, status=500)
 
 
-class CobrarSubastaView(APIView):
-    permission_classes = [IsAuthenticated]
+# class CobrarSubastaView(APIView):
+#     permission_classes = [IsAuthenticated]
 
-    def post(self, request, auction_id):
-        try:
-            auction = Auction.objects.get(id=auction_id)
-        except Auction.DoesNotExist:
-            return Response({"detail": "Subasta no encontrada."}, status=404)
+#     def post(self, request, auction_id):
+#         try:
+#             auction = Auction.objects.get(id=auction_id)
+#         except Auction.DoesNotExist:
+#             return Response({"detail": "Subasta no encontrada."}, status=404)
 
-        if auction.closing_date > timezone.now():
-            return Response({"detail": "La subasta aún está abierta."}, status=400)
+#         if auction.closing_date > timezone.now():
+#             return Response({"detail": "La subasta aún está abierta."}, status=400)
 
-        if request.user != auction.auctioneer and not request.user.is_staff:
-            return Response({"detail": "No tienes permiso para cobrar esta subasta."}, status=403)
+#         if request.user != auction.auctioneer and not request.user.is_staff:
+#             return Response({"detail": "No tienes permiso para cobrar esta subasta."}, status=403)
 
-        highest_bid = auction.bids.order_by("-price").first()
-        if not highest_bid:
-            return Response({"detail": "La subasta no tiene pujas."}, status=400)
+#         highest_bid = auction.bids.order_by("-price").first()
+#         if not highest_bid:
+#             return Response({"detail": "La subasta no tiene pujas."}, status=400)
 
-        bidder = highest_bid.bidder
-        auctioneer = auction.auctioneer
-        amount = highest_bid.price
+#         bidder = highest_bid.bidder
+#         auctioneer = auction.auctioneer
+#         amount = highest_bid.price
 
-        # Calcular saldo del pujador
-        saldo_pujador = sum([
-            t.amount if t.is_deposit else -t.amount
-            for t in bidder.wallet_transactions.all()
-        ])
-        if saldo_pujador < amount:
-            return Response({"detail": "El pujador no tiene saldo suficiente para el cobro."}, status=400)
+#         # Calcular saldo del pujador
+#         saldo_pujador = sum([
+#             t.amount if t.is_deposit else -t.amount
+#             for t in bidder.wallet_transactions.all()
+#         ])
+#         if saldo_pujador < amount:
+#             return Response({"detail": "El pujador no tiene saldo suficiente para el cobro."}, status=400)
 
-        # Generar transferencia
-        WalletTransaction.objects.create(
-            user=bidder,
-            card_number="COBRO",
-            amount=amount,
-            is_deposit=False
-        )
-        WalletTransaction.objects.create(
-            user=auctioneer,
-            card_number="COBRO",
-            amount=amount,
-            is_deposit=True
-        )
+#         # Generar transferencia
+#         WalletTransaction.objects.create(
+#             user=bidder,
+#             card_number="COBRO",
+#             amount=amount,
+#             is_deposit=False
+#         )
+#         WalletTransaction.objects.create(
+#             user=auctioneer,
+#             card_number="COBRO",
+#             amount=amount,
+#             is_deposit=True
+#         )
 
-        return Response({"detail": f"Se han transferido {amount}€ al subastador correctamente."}, status=200)
+#         return Response({"detail": f"Se han transferido {amount}€ al subastador correctamente."}, status=200)
 
 """
 Texto: http://127.0.0.1:8000/api/auctions/?texto=iphone
