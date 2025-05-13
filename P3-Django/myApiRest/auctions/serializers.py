@@ -186,6 +186,9 @@ class BidListCreateSerializer(serializers.ModelSerializer):
     def validate(self, data):
         request = self.context.get("request")
         auction = self.context.get("auction")
+        user = request.user
+        price = data.get("price")
+
 
         if not auction:
             raise serializers.ValidationError("La subasta asociada no está definida.")
@@ -197,6 +200,13 @@ class BidListCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("La puja debe ser mayor que la anterior.")
         if not highest_bid and price <= auction.price:
             raise serializers.ValidationError("La puja debe ser mayor que el precio inicial.")
+
+        saldo = sum([
+            t.amount if t.is_deposit else -t.amount
+            for t in user.wallet_transactions.all()
+            ])
+        if price > saldo:
+            raise serializers.ValidationError("No tienes saldo suficiente para realizar esta puja.")
 
         return data
 
