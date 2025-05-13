@@ -218,7 +218,7 @@ class UserRatingListView(APIView):
         return Response(data)
 
 class WalletTransactionView(generics.ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
     serializer_class = WalletTransactionSerializer
 
     def get_queryset(self):
@@ -228,9 +228,8 @@ class WalletTransactionView(generics.ListCreateAPIView):
         serializer.save(user=self.request.user)
 
 
-
 class WalletBalanceView(APIView):
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
 
     def get(self, request):
         try:
@@ -240,11 +239,11 @@ class WalletBalanceView(APIView):
                 if t.amount is not None:
                     total += t.amount if t.is_deposit else -t.amount
 
-            return Response({'saldo_actual': round(total, 2)})
+            return Response({'saldo_actual': str(round(total, 2))})
         except Exception as e:
-            # Esto te ayudará a depurar en local o en logs
-            print("❌ Error en WalletBalanceView:", str(e))
+            print("💥 Error interno en WalletBalanceView:", str(e))
             return Response({'detail': 'Error interno al calcular el saldo.'}, status=500)
+
 
 """
 Texto: http://127.0.0.1:8000/api/auctions/?texto=iphone
