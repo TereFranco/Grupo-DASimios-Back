@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import CategoryListCreate, CategoryRetrieveUpdateDestroy, AuctionListCreate, AuctionRetrieveUpdateDestroy, BidListCreate, BidRetrieveUpdateDestroy, UserAuctionListView, RatingListCreateView, RatingUpdateDeleteView, CommentListCreateView, CommentDetailView, UserCommentListView, UserRatingListView, WalletTransactionView, WalletBalanceView, CobrarSubastaView
+from .views import CategoryListCreate, CategoryRetrieveUpdateDestroy, AuctionListCreate, AuctionRetrieveUpdateDestroy, BidListCreate, BidRetrieveUpdateDestroy, UserAuctionListView, RatingListCreateView, RatingUpdateDeleteView, CommentListCreateView, CommentDetailView, UserCommentListView, UserRatingListView, WalletTransactionView, WalletBalanceView
 
 app_name="auctions" 
 
