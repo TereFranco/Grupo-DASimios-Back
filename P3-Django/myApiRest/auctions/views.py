@@ -218,7 +218,7 @@ class UserRatingListView(APIView):
         return Response(data)
 
 class WalletTransactionView(generics.ListCreateAPIView):
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     serializer_class = WalletTransactionSerializer
 
     def get_queryset(self):
@@ -229,7 +229,7 @@ class WalletTransactionView(generics.ListCreateAPIView):
 
 
 class WalletBalanceView(APIView):
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         try:
