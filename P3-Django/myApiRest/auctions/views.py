@@ -4,7 +4,7 @@ from .models import Category, Auction, Bid, Rating, Comment, WalletTransaction
 from .serializers import CategoryListCreateSerializer, CategoryDetailSerializer, AuctionListCreateSerializer, AuctionDetailSerializer, BidDetailSerializer, BidListCreateSerializer, UserBidSerializer, RatingListCreateSerializer, RatingUpdateRetrieveSerializer, CommentSerializer, WalletTransactionSerializer
 from decimal import Decimal
 from django.db.models import Q
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.views import APIView 
 from rest_framework.permissions import IsAuthenticated 
 from rest_framework.response import Response 
@@ -43,7 +43,25 @@ class BidListCreate(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         auction = Auction.objects.get(id=self.kwargs['auction_id'])
-        serializer.save(auction=auction, bidder=self.request.user)
+        user = self.request.user
+        price = serializer.validated_data['price']
+
+        saldo = sum([
+            t.amount if t.is_deposit else -t.amount
+            for t in user.wallet_transactions.all()
+        ])
+
+        if saldo < price:
+            raise ValidationError("Saldo insuficiente para realizar la puja.")
+
+        serializer.save(auction=auction, bidder=user)
+
+        WalletTransaction.objects.create(
+            user=user,
+            card_number="PUJA",
+            amount=price,
+            is_deposit=False
+        )
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
