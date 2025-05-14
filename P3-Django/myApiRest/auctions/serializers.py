@@ -120,7 +120,7 @@ class AuctionDetailSerializer(serializers.ModelSerializer):
         fields = [
         'id', 'title', 'description', 'price', 'stock',
         'brand', 'category', 'category_name', 'thumbnail',
-        'creation_date', 'closing_date', 'isOpen', 'auctioneer_name'
+        'creation_date', 'closing_date', 'isOpen', 'auctioneer_name',
         'es_mia'
     ]
 
