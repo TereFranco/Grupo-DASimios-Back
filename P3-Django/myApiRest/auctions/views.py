@@ -26,15 +26,15 @@ class AuctionRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsOwnerOrAdmin]  
     queryset = Auction.objects.all()
     serializer_class = AuctionDetailSerializer
-
-    # Si no existe una subasta introducida en la url
+ 
     def get_object(self):
         try:
-            auction = Auction.objects.get(pk=self.kwargs['pk'])
+            # Asegura que se carga el campo 'auctioneer' para usarlo en el serializer
+            auction = Auction.objects.select_related("auctioneer").get(pk=self.kwargs['pk'])
         except Auction.DoesNotExist:
             raise NotFound(detail="La subasta solicitada no existe.")
         return auction
-    
+ 
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['request'] = self.request
@@ -69,9 +69,9 @@ class AuctionListCreate(generics.ListCreateAPIView):
     def get_queryset(self):
         queryset = Auction.objects.all()
         texto = self.request.query_params.get('search')
-        categoria = self.request.query_params.get('category_id')
-        precio_min = self.request.query_params.get('min_price')
-        precio_max = self.request.query_params.get('max_price')
+        categoria = self.request.query_params.get('category')
+        precio_min = self.request.query_params.get('minPrice')
+        precio_max = self.request.query_params.get('maxPrice')
         estado = self.request.query_params.get('estado')
  
         # Filtrar por texto (en título o descripción)
