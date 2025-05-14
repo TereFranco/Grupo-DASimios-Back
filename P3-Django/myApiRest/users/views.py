@@ -72,7 +72,7 @@ class ChangePasswordView(APIView):
  
         if serializer.is_valid(): 
             if not user.check_password(serializer.validated_data['old_password']): 
-                return Response({"old_password": "Incorrect current password."}, 
+                return Response({"old_password": "Contraseña antigua incorrecta."}, 
                                 status=status.HTTP_400_BAD_REQUEST) 
  
             try: 
@@ -83,7 +83,7 @@ status=status.HTTP_400_BAD_REQUEST)
  
             user.set_password(serializer.validated_data['new_password']) 
             user.save() 
-            return Response({"detail": "Password updated successfully."}) 
+            return Response({"detail": "La contraseña se ha actualizado correctamente."}) 
  
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -98,13 +98,13 @@ class LogoutView(APIView):
      #Se esperan que esté en el header Authorization 
             refresh_token = request.data.get('refresh', None) 
             if not refresh_token: 
-                return Response({"detail": "No refresh token provided."}, 
+                return Response({"detail": "No se ha proporcionado el refresh token."}, 
 status=status.HTTP_400_BAD_REQUEST) 
  
             # Revocar el RefreshToken 
             token = RefreshToken(refresh_token) 
             token.blacklist()   
-            return Response({"detail": "Logout successful"}, 
+            return Response({"detail": "Cerrado sesión con éxito"}, 
 status=status.HTTP_205_RESET_CONTENT) 
  
         except Exception as e: 

@@ -64,18 +64,18 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
 
     def validate_price(self, value):
         if value <= 0:
-            raise serializers.ValidationError("Price has to be positive and higher than zero.")
+            raise serializers.ValidationError("El precio debe ser positivo y mayor a cero.")
         return value
 
     def validate_stock(self, value):
         if value < 0:
-            raise serializers.ValidationError("Stock cannot be negative")
+            raise serializers.ValidationError("El stock no puede ser negativo.")
         return value
 
-    def validate_rating(self, value):
-        if not (1 <= value <= 5):
-            raise serializers.ValidationError("Valoration has to be between 1 and 5")
-        return value
+    # def validate_rating(self, value):
+    #     if not (1 <= value <= 5):
+    #         raise serializers.ValidationError("Valoration has to be between 1 and 5")
+    #     return value
 
     def get_media_rating(self, obj):
         avg = obj.ratings.aggregate(Avg("rating"))["rating__avg"]
@@ -88,13 +88,13 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
         # La fecha de cierre sea posterior a la fecha de creación (actual)
         if closing_date <= creation_time:
             raise serializers.ValidationError({
-                "closing_date": "The closing date must be later than the current date."
+                "closing_date": "La fecha de cierre debe ser posterior a la fecha de hoy"
             })
 
         # Verifica que la fecha de cierre sea al menos 15 días posterior a la fecha de creación
         if closing_date < creation_time + timedelta(days=15):
             raise serializers.ValidationError({
-                "closing_date": "The closing date must be at least 15 days after the current date."
+                "closing_date": "La fecha de cierre debe ser al menos 15 días posterior a la fecha de hoy."
             })
 
         return data
@@ -129,18 +129,18 @@ class AuctionDetailSerializer(serializers.ModelSerializer):
     
     def validate_price(self, value):
         if value <= 0:
-            raise serializers.ValidationError("Price has to be positive and higher than zero.")
+            raise serializers.ValidationError("El precio debe ser positivo y mayor a cero.")
         return value
 
     def validate_stock(self, value):
         if value < 0:
-            raise serializers.ValidationError("Stock cannot be negative")
+            raise serializers.ValidationError("El stock no puede ser negativo.")
         return value
 
-    def validate_rating(self, value):
-        if not (1 <= value <= 5):
-            raise serializers.ValidationError("Valoration has to be between 1 and 5")
-        return value
+    # def validate_rating(self, value):
+    #     if not (1 <= value <= 5):
+    #         raise serializers.ValidationError("La valoración debe estar entre 1 y 5.")
+    #     return value
 
     
     def validate(self, data):
@@ -150,13 +150,13 @@ class AuctionDetailSerializer(serializers.ModelSerializer):
         # La fecha de cierre sea posterior a la fecha de creación (actual)
         if closing_date <= creation_time:
             raise serializers.ValidationError({
-                "closing_date": "The closing date must be later than the current date."
+                "closing_date": "La fecha de cierre debe ser posteiror a la fecha de hoy."
             })
 
         # Verifica que la fecha de cierre sea al menos 15 días posterior a la fecha de creación
         if closing_date < creation_time + timedelta(days=15):
             raise serializers.ValidationError({
-                "closing_date": "The closing date must be at least 15 days after the current date."
+                "closing_date": "La fecha de cierre debe ser al menos 15 días posterior a la actual."
             })
 
         return data
@@ -240,9 +240,9 @@ class BidDetailSerializer(serializers.ModelSerializer):
 
         highest_bid = auction.bids.order_by('-price').first()
         if highest_bid and price <= highest_bid.price:
-            raise serializers.ValidationError("The bid must be higher than the previous one.")
+            raise serializers.ValidationError("La puja debe ser mayor a la previa.")
         if not highest_bid and price <= auction.starting_price:
-            raise serializers.ValidationError("The bid must be higher than the starting price.")
+            raise serializers.ValidationError("La puja debe ser mayor al precio inicial.")
         return data
     
     def get_auction_title(self, obj):
@@ -271,12 +271,12 @@ class UserBidSerializer(serializers.ModelSerializer):
 
         highest_bid = auction.bids.order_by('-price').first()
         if highest_bid and price <= highest_bid.price:
-            raise serializers.ValidationError("The bid must be higher than the previous one.")
+            raise serializers.ValidationError("La puja debe ser mayor que la previa.")
 
         # Si el usuario ya tiene una puja, que solo pueda mejorarla
         existing_user_bid = auction.bids.filter(bidder=user).first()
         if existing_user_bid and price <= existing_user_bid.price:
-            raise serializers.ValidationError("You must increase your previous bid.")
+            raise serializers.ValidationError("Debes aumentar tu puja anterior.")
 
         return data
     

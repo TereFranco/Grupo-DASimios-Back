@@ -14,7 +14,7 @@ class UserSerializer(serializers.ModelSerializer):
     def validate_email(self, value): 
         user = self.instance  # Solo tiene valor cuando se está actualizando 
         if CustomUser.objects.filter(email=value).exclude(pk=user.pk if user else None).exists(): 
-            raise serializers.ValidationError("Email already in used.") 
+            raise serializers.ValidationError("Este email ya está en uso.") 
         return value 
         
     def create(self, validated_data): 
