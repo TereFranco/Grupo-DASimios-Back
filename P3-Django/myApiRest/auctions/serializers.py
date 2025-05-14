@@ -86,16 +86,16 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
         creation_time = timezone.now()  # Obtén la fecha y hora actuales, ya que creation_date es read_only
 
         # La fecha de cierre sea posterior a la fecha de creación (actual)
-        if closing_date <= creation_time:
-            raise serializers.ValidationError({
-                "closing_date": "La fecha de cierre debe ser posterior a la fecha de hoy"
-            })
+        # if closing_date <= creation_time:
+        #     raise serializers.ValidationError({
+        #         "closing_date": "La fecha de cierre debe ser posterior a la fecha de hoy"
+        #     })
 
-        # Verifica que la fecha de cierre sea al menos 15 días posterior a la fecha de creación
-        if closing_date < creation_time + timedelta(days=15):
-            raise serializers.ValidationError({
-                "closing_date": "La fecha de cierre debe ser al menos 15 días posterior a la fecha de hoy."
-            })
+        # # Verifica que la fecha de cierre sea al menos 15 días posterior a la fecha de creación
+        # if closing_date < creation_time + timedelta(days=15):
+        #     raise serializers.ValidationError({
+        #         "closing_date": "La fecha de cierre debe ser al menos 15 días posterior a la fecha de hoy."
+        #     })
 
         return data
     
@@ -148,16 +148,16 @@ class AuctionDetailSerializer(serializers.ModelSerializer):
         creation_time = timezone.now()  # Obtén la fecha y hora actuales, ya que creation_date es read_only
 
         # La fecha de cierre sea posterior a la fecha de creación (actual)
-        if closing_date <= creation_time:
-            raise serializers.ValidationError({
-                "closing_date": "La fecha de cierre debe ser posteiror a la fecha de hoy."
-            })
+        # if closing_date <= creation_time:
+        #     raise serializers.ValidationError({
+        #         "closing_date": "La fecha de cierre debe ser posteiror a la fecha de hoy."
+        #     })
 
-        # Verifica que la fecha de cierre sea al menos 15 días posterior a la fecha de creación
-        if closing_date < creation_time + timedelta(days=15):
-            raise serializers.ValidationError({
-                "closing_date": "La fecha de cierre debe ser al menos 15 días posterior a la actual."
-            })
+        # # Verifica que la fecha de cierre sea al menos 15 días posterior a la fecha de creación
+        # if closing_date < creation_time + timedelta(days=15):
+        #     raise serializers.ValidationError({
+        #         "closing_date": "La fecha de cierre debe ser al menos 15 días posterior a la actual."
+        #     })
 
         return data
     
@@ -236,7 +236,7 @@ class BidDetailSerializer(serializers.ModelSerializer):
         price = data.get('price')
 
         if auction.closing_date < timezone.now():
-            raise serializers.ValidationError("Auction is closed.")
+            raise serializers.ValidationError("La subasta esta cerrada.")
 
         highest_bid = auction.bids.order_by('-price').first()
         if highest_bid and price <= highest_bid.price:
