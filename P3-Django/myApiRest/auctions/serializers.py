@@ -127,7 +127,13 @@ class AuctionDetailSerializer(serializers.ModelSerializer):
 
     def get_es_mia(self, obj):
         request = self.context.get("request")
-        return request.user == obj.auctioneer if request and request.user.is_authenticated else False
+
+        print("🔍 request.user.username:", getattr(request.user, "username", None))
+        print("🔍 obj.auctioneer.username:", getattr(obj.auctioneer, "username", None))
+
+        if request and request.user.is_authenticated:
+            return request.user == obj.auctioneer
+        return False
 
     @extend_schema_field(serializers.BooleanField()) 
     def get_isOpen(self, obj):
