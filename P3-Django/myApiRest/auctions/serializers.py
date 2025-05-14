@@ -113,6 +113,7 @@ class AuctionDetailSerializer(serializers.ModelSerializer):
     closing_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")   
     isOpen = serializers.SerializerMethodField(read_only=True)
     category_name = serializers.SerializerMethodField(read_only=True)
+    es_mia = serializers.SerializerMethodField()
 
     class Meta:
         model = Auction
@@ -120,8 +121,13 @@ class AuctionDetailSerializer(serializers.ModelSerializer):
         'id', 'title', 'description', 'price', 'stock',
         'brand', 'category', 'category_name', 'thumbnail',
         'creation_date', 'closing_date', 'isOpen', 'auctioneer_name'
+        'es_mia'
     ]
 
+
+    def get_es_mia(self, obj):
+        request = self.context.get("request")
+        return request.user == obj.auctioneer if request and request.user.is_authenticated else False
 
     @extend_schema_field(serializers.BooleanField()) 
     def get_isOpen(self, obj):

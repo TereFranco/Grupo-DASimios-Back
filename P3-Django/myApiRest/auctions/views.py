@@ -34,6 +34,12 @@ class AuctionRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         except Auction.DoesNotExist:
             raise NotFound(detail="La subasta solicitada no existe.")
         return auction
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
 
 class BidListCreate(generics.ListCreateAPIView):
     serializer_class = BidListCreateSerializer
